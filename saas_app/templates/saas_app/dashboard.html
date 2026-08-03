@@ -1,0 +1,36 @@
+Generate Content
+    
+    
+    
+        {% csrf_token %}
+        
+        
+            Generate (Costs 1 Credit)
+        
+    
+
+
+
+{% if error_message %}
+    
+        {{ error_message }}
+    
+{% elif ai_result %}
+    
+        AI Response:
+        {{ ai_result }}
+    
+{% endif %}
+
+
+
+    Recent Generations
+    
+        {% for item in history %}
+            
+                Prompt: {{ item.prompt }}
+                {{ item.created_at|date:"M d, Y h:i A" }}
+            
+        {% empty %}
+            No generations yet.
+        {% endfor %}
