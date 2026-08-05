@@ -3,24 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RibhuAI — Dashboard</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>RibhuAI — Workspace</title>
+    
+    <!-- Tailwind CSS with Typography Plugin for Markdown formatting -->
+    <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
+    
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Font Inter -->
+    
+    <!-- Marked.js (Markdown Parser) & Highlight.js (Code Syntax Highlighting) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/16.3.0/marked.umd.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/atom-one-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
+
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Inter', sans-serif; }
-    </style>
+    <style>body { font-family: 'Inter', sans-serif; }</style>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col antialiased">
 
     <!-- Top Navigation Bar -->
     <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-            
-            <!-- Logo & Brand -->
             <div class="flex items-center space-x-3">
                 <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center shadow-lg shadow-indigo-500/20">
                     <i class="fa-solid fa-wand-magic-sparkles text-white text-base"></i>
@@ -28,32 +31,20 @@
                 <span class="font-bold text-lg tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400">RibhuAI</span>
             </div>
 
-            <!-- User Status & Actions -->
             <div class="flex items-center space-x-4">
-                
-                <!-- Credits Counter -->
                 <div class="bg-slate-900 border border-slate-800 rounded-full px-4 py-1.5 flex items-center space-x-2">
                     <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
                     <span class="text-xs text-slate-400">Credits:</span>
                     <span class="text-sm font-bold text-white">{{ credits }}</span>
                 </div>
-
-                <!-- Upgrade Button -->
-                <a href="{% url 'checkout' %}" 
-                   class="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-medium text-xs px-4 py-2 rounded-full shadow-lg shadow-indigo-500/25 transition-all duration-200 flex items-center space-x-2">
+                <a href="{% url 'checkout' %}" class="bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs px-4 py-2 rounded-full transition-all flex items-center space-x-2">
                     <i class="fa-solid fa-bolt"></i>
-                    <span>Get More Credits</span>
+                    <span>Upgrade</span>
                 </a>
-                
-                <!-- User Profile Pill -->
-                <div class="text-xs text-slate-400 border-l border-slate-800 pl-4 hidden sm:block">
-                    <i class="fa-regular fa-user mr-1"></i> {{ user.username }}
-                </div>
             </div>
         </div>
     </header>
 
-    <!-- Main Workspace -->
     <main class="flex-1 max-w-5xl w-full mx-auto px-4 py-8 space-y-6">
 
         <!-- Error Banner -->
@@ -64,30 +55,51 @@
         </div>
         {% endif %}
 
-        <!-- AI Generation Card -->
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl relative overflow-hidden">
+        <!-- Smart Templates Grid (The USP) -->
+        <div>
+            <h2 class="text-sm font-semibold text-slate-400 mb-3 uppercase tracking-wider">1-Click Smart Tools</h2>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <button onclick="applyTemplate('code')" class="text-left bg-slate-900 border border-slate-800 p-4 rounded-xl hover:border-indigo-500 hover:bg-slate-800 transition-all group">
+                    <i class="fa-solid fa-code text-indigo-400 mb-2 text-xl group-hover:scale-110 transition-transform"></i>
+                    <h3 class="font-medium text-sm text-slate-200">Code Reviewer</h3>
+                    <p class="text-xs text-slate-500 mt-1">Find bugs and optimize code.</p>
+                </button>
+                <button onclick="applyTemplate('twitter')" class="text-left bg-slate-900 border border-slate-800 p-4 rounded-xl hover:border-sky-500 hover:bg-slate-800 transition-all group">
+                    <i class="fa-brands fa-x-twitter text-sky-400 mb-2 text-xl group-hover:scale-110 transition-transform"></i>
+                    <h3 class="font-medium text-sm text-slate-200">Viral Thread</h3>
+                    <p class="text-xs text-slate-500 mt-1">Write an engaging social thread.</p>
+                </button>
+                <button onclick="applyTemplate('email')" class="text-left bg-slate-900 border border-slate-800 p-4 rounded-xl hover:border-emerald-500 hover:bg-slate-800 transition-all group">
+                    <i class="fa-solid fa-envelope-open-text text-emerald-400 mb-2 text-xl group-hover:scale-110 transition-transform"></i>
+                    <h3 class="font-medium text-sm text-slate-200">Cold Email</h3>
+                    <p class="text-xs text-slate-500 mt-1">High-converting B2B emails.</p>
+                </button>
+                <button onclick="applyTemplate('seo')" class="text-left bg-slate-900 border border-slate-800 p-4 rounded-xl hover:border-orange-500 hover:bg-slate-800 transition-all group">
+                    <i class="fa-solid fa-magnifying-glass-chart text-orange-400 mb-2 text-xl group-hover:scale-110 transition-transform"></i>
+                    <h3 class="font-medium text-sm text-slate-200">SEO Blog Post</h3>
+                    <p class="text-xs text-slate-500 mt-1">Rank higher on Google.</p>
+                </button>
+            </div>
+        </div>
+
+        <!-- AI Generation Area -->
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl relative overflow-hidden mt-6">
             <div class="flex items-center justify-between mb-4">
                 <h2 class="text-lg font-semibold text-white flex items-center space-x-2">
-                    <i class="fa-regular fa-lightbulb text-indigo-400"></i>
+                    <i class="fa-solid fa-terminal text-indigo-400"></i>
                     <span>Prompt Studio</span>
                 </h2>
-                <span class="text-xs text-slate-400 bg-slate-800/80 px-2.5 py-1 rounded-md">Costs 1 credit</span>
+                <span class="text-xs font-medium text-indigo-300 bg-indigo-500/10 border border-indigo-500/20 px-2.5 py-1 rounded-md">Costs 1 credit</span>
             </div>
 
             <form method="POST" id="ai-form" class="space-y-4">
                 {% csrf_token %}
-                <div class="relative">
-                    <textarea name="prompt" 
-                              rows="4" 
-                              class="w-full bg-slate-950/70 border border-slate-800 rounded-xl p-4 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all resize-none" 
-                              placeholder="Type your prompt here (e.g. Write a 3-bullet marketing copy for an AI coding assistant)..." 
-                              required></textarea>
-                </div>
+                <textarea id="prompt-input" name="prompt" rows="5" 
+                          class="w-full bg-slate-950/70 border border-slate-700 rounded-xl p-4 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all resize-y" 
+                          placeholder="Type your prompt here, or select a smart tool from above..." required></textarea>
 
                 <div class="flex justify-end">
-                    <button type="submit" 
-                            id="submit-btn"
-                            class="bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-sm px-6 py-2.5 rounded-xl transition-all flex items-center space-x-2 shadow-lg shadow-indigo-600/30">
+                    <button type="submit" id="submit-btn" class="bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-sm px-6 py-2.5 rounded-xl transition-all flex items-center space-x-2 shadow-lg shadow-indigo-600/30">
                         <i class="fa-solid fa-paper-plane text-xs"></i>
                         <span>Generate Response</span>
                     </button>
@@ -97,65 +109,78 @@
 
         <!-- AI Output Result -->
         {% if ai_result %}
-        <div class="bg-slate-900 border border-indigo-500/30 rounded-2xl p-6 shadow-2xl relative">
-            <div class="flex items-center justify-between mb-3 pb-3 border-b border-slate-800">
-                <div class="flex items-center space-x-2 text-indigo-400 text-xs font-semibold uppercase tracking-wider">
+        <div class="bg-slate-900 border border-indigo-500/50 rounded-2xl p-6 shadow-2xl relative" id="result-container">
+            <div class="flex items-center justify-between mb-4 pb-4 border-b border-slate-800">
+                <div class="flex items-center space-x-2 text-indigo-400 text-xs font-bold uppercase tracking-wider">
                     <i class="fa-solid fa-robot"></i>
                     <span>AI Result</span>
                 </div>
-                <button onclick="copyToClipboard()" class="text-slate-400 hover:text-white text-xs flex items-center space-x-1 transition-colors">
+                <button onclick="copyFormattedText()" class="text-slate-400 hover:text-white text-xs flex items-center space-x-1 bg-slate-800 px-3 py-1.5 rounded-lg transition-colors">
                     <i class="fa-regular fa-copy"></i>
                     <span id="copy-text">Copy</span>
                 </button>
             </div>
-            <div id="ai-output" class="text-slate-200 text-sm leading-relaxed whitespace-pre-wrap font-sans">{{ ai_result }}</div>
+            
+            <!-- Hidden raw text from Django -->
+            <div id="raw-ai-output" class="hidden">{{ ai_result|escapejs }}</div>
+            
+            <!-- Where the beautifully formatted markdown will appear -->
+            <div id="formatted-output" class="prose prose-invert prose-indigo max-w-none text-sm"></div>
         </div>
         {% endif %}
 
-        <!-- History Feed -->
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl">
-            <h3 class="text-sm font-semibold text-slate-300 mb-4 flex items-center space-x-2">
-                <i class="fa-solid fa-clock-rotate-left text-slate-500"></i>
-                <span>Recent Generations</span>
-            </h3>
-
-            <div class="space-y-3">
-                {% for item in history %}
-                    <div class="bg-slate-950/50 border border-slate-800/80 rounded-xl p-4 hover:border-slate-700 transition-colors">
-                        <p class="text-sm font-medium text-slate-200 mb-1">"{{ item.prompt }}"</p>
-                        <p class="text-xs text-slate-500 flex items-center space-x-2">
-                            <span>{{ item.created_at|date:"M d, Y • h:i A" }}</span>
-                        </p>
-                    </div>
-                {% empty %}
-                    <div class="text-center py-8 text-slate-500 text-sm">
-                        <i class="fa-regular fa-folder-open text-2xl mb-2 block text-slate-600"></i>
-                        No generations yet. Try entering a prompt above!
-                    </div>
-                {% endfor %}
-            </div>
-        </div>
-
     </main>
 
-    <!-- Simple JavaScript Helpers -->
     <script>
-        // Copy to clipboard helper
-        function copyToClipboard() {
-            const text = document.getElementById('ai-output').innerText;
-            navigator.clipboard.writeText(text);
+        // --- 1. Smart Templates Logic ---
+        const templates = {
+            code: "Act as a Senior Software Engineer. Review the following code. Identify any bugs, security vulnerabilities, or performance issues. Then, provide the refactored, optimized version of the code with comments explaining your changes:\n\n[PASTE YOUR CODE HERE]",
+            twitter: "Write a highly engaging, 5-part Twitter/X thread about [TOPIC]. The first tweet must have a powerful hook that stops people from scrolling. Use line breaks and relevant emojis. Do not use hashtags.",
+            email: "Write a short, punchy B2B cold email pitching [YOUR PRODUCT/SERVICE] to [TARGET AUDIENCE]. Keep it under 100 words. Focus on their pain points, provide a clear value proposition, and end with a low-friction call to action.",
+            seo: "Write a comprehensive, SEO-optimized blog post outline about [TOPIC]. Include an H1 title, a catchy introduction hook, 4-5 H2 sections with bullet points for what to cover, and a conclusion. Suggest 3 long-tail keywords to target."
+        };
+
+        function applyTemplate(type) {
+            const textarea = document.getElementById('prompt-input');
+            textarea.value = templates[type];
+            textarea.focus();
+            // Optional: highlight the bracketed text for easy replacement
+            textarea.setSelectionRange(textarea.value.indexOf('['), textarea.value.lastIndexOf(']') + 1);
+        }
+
+        // --- 2. Loading State Logic ---
+        document.getElementById('ai-form').addEventListener('submit', function() {
+            const btn = document.getElementById('submit-btn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner animate-spin text-xs"></i> <span>Processing...</span>';
+            btn.classList.add('opacity-75', 'cursor-not-allowed');
+        });
+
+        // --- 3. Markdown & Syntax Highlighting Logic ---
+        document.addEventListener("DOMContentLoaded", function() {
+            const rawOutputElement = document.getElementById('raw-ai-output');
+            
+            if (rawOutputElement) {
+                // Decode the text sent by Django safely
+                let rawText = rawOutputElement.textContent || rawOutputElement.innerText;
+                
+                // Parse Markdown to HTML
+                document.getElementById('formatted-output').innerHTML = marked.parse(rawText);
+                
+                // Apply syntax highlighting to any <code> blocks
+                hljs.highlightAll();
+            }
+        });
+
+        // --- 4. Copy to Clipboard ---
+        function copyFormattedText() {
+            const rawOutputElement = document.getElementById('raw-ai-output');
+            navigator.clipboard.writeText(rawOutputElement.textContent || rawOutputElement.innerText);
+            
             const copyText = document.getElementById('copy-text');
             copyText.innerText = 'Copied!';
             setTimeout(() => { copyText.innerText = 'Copy'; }, 2000);
         }
-
-        // Loading state on button click
-        document.getElementById('ai-form').addEventListener('submit', function() {
-            const btn = document.getElementById('submit-btn');
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fa-solid fa-spinner animate-spin text-xs"></i> <span>Generating...</span>';
-            btn.classList.add('opacity-75');
-        });
     </script>
 </body>
 </html>
