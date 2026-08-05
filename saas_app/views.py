@@ -1,8 +1,4 @@
 import os
-import json
-import hmac
-import hashlib
-import urllib.parse
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
@@ -16,6 +12,13 @@ client = InferenceClient(
     model=HF_MODEL,
     token=os.environ.get("HF_TOKEN")
 )
+
+def landing_page(request):
+    """
+    Renders the public landing page.
+    """
+    return render(request, 'saas_app/landing.html')
+
 
 @login_required
 def dashboard(request):
@@ -37,7 +40,6 @@ def dashboard(request):
                 )
                 ai_result = response.choices[0].message.content
                 
-                # Deduct credit and save
                 user.credits -= 1
                 user.save()
                 
@@ -67,62 +69,29 @@ def dashboard(request):
 @login_required
 def create_checkout_session(request):
     """
-    Redirects the user to your Lemon Squeezy checkout page.
+    Redirects the user to your Gumroad checkout page.
     """
-    # Replace 'ribhuai' with your actual Lemon Squeezy store subdomain if different
-    store_url = "https://ribhuai.lemonsqueezy.com/checkout/buy"
-    
-    # Replace with your actual Variant ID from Lemon Squeezy product settings
-    variant_id = "YOUR_VARIANT_ID_HERE" 
-    
-    custom_data = {
-        "checkout[custom][user_id]": request.user.id
-    }
-    
-    query_string = urllib.parse.urlencode(custom_data)
-    checkout_url = f"{store_url}/{variant_id}?{query_string}"
-    
+    gumroad_url = "https://gumroad.com/l/YOUR_LINK_HERE" 
+    checkout_url = f"{gumroad_url}?user_id={request.user.id}"
     return redirect(checkout_url)
 
 
 @csrf_exempt
-def lemon_squeezy_webhook(request):
+def gumroad_webhook(request):
     """
-    Handles incoming webhook notifications from Lemon Squeezy.
+    Handles incoming webhook notifications from Gumroad.
     """
-    if request.method != 'POST':
-        return HttpResponse(status=405)
-
-    webhook_secret = os.environ.get("LEMON_SQUEEZY_WEBHOOK_SECRET", "")
-    secret = webhook_secret.encode('utf-8')
-    signature = request.META.get('HTTP_X_SIGNATURE', '')
-    
-    digest = hmac.new(secret, request.body, hashlib.sha256).hexdigest()
-    
-    if not hmac.compare_digest(digest, signature):
-        return HttpResponse("Invalid signature", status=400)
-
-    try:
-        payload = json.loads(request.body)
-        event_name = payload.get('meta', {}).get('event_name')
+    if request.method == 'POST':
+        user_id = request.POST.get('user_id')
         
-        if event_name == 'order_created':
-            custom_data = payload.get('meta', {}).get('custom_data', {})
-            user_id = custom_data.get('user_id')
-            
-            if user_id:
+        if user_id:
+            try:
                 user = User.objects.get(id=user_id)
                 user.tier = 'PRO'
                 user.credits += 100
                 user.save()
-
-        return HttpResponse(status=200)
-
-    except Exception as e:
-        return HttpResponse(f"Webhook Error: {str(e)}", status=400)
-
-def landing_page(request):
-    """
-    Renders the public landing page.
-    """
-    return render(request, 'saas_app/landing.html')
+                return HttpResponse("Credits added successfully!", status=200)
+            except User.DoesNotExist:
+                return HttpResponse("User not found", status=404)
+                
+    return HttpResponse("Method not allowed", status=405)
