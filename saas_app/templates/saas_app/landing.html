@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en" class="dark scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RibhuAI — AI Micro-Tools for Builders & Creators</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Font Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>body { font-family: 'Inter', sans-serif; }</style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col antialiased selection:bg-indigo-500 selection:text-white">
+
+    <!-- Top Navigation -->
+    <header class="border-b border-slate-800/80 bg-slate-950/80 backdrop-blur fixed top-0 w-full z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+                    <i class="fa-solid fa-wand-magic-sparkles text-white text-base"></i>
+                </div>
+                <span class="font-bold text-lg tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400">RibhuAI</span>
+            </div>
+
+            <nav class="hidden md:flex items-center space-x-8 text-sm text-slate-400 font-medium">
+                <a href="#features" class="hover:text-white transition-colors">Features</a>
+                <a href="#pricing" class="hover:text-white transition-colors">Pricing</a>
+            </nav>
+
+            <div class="flex items-center space-x-4">
+                {% if user.is_authenticated %}
+                    <a href="{% url 'dashboard' %}" class="bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs sm:text-sm px-5 py-2 rounded-xl transition-all shadow-lg shadow-indigo-600/30 flex items-center space-x-2">
+                        <span>Go to Workspace</span>
+                        <i class="fa-solid fa-arrow-right text-xs"></i>
+                    </a>
+                {% else %}
+                    <a href="{% url 'dashboard' %}" class="text-sm font-medium text-slate-300 hover:text-white px-3 py-2 transition-colors">Sign In</a>
+                    <a href="{% url 'dashboard' %}" class="bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs sm:text-sm px-5 py-2 rounded-xl transition-all shadow-lg shadow-indigo-600/30">
+                        Start Free (5 Credits)
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="pt-32 pb-20 px-4 max-w-5xl mx-auto text-center relative overflow-hidden">
+        <!-- Background Gradient Glow -->
+        <div class="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl -z-10 pointer-events-none"></div>
+
+        <div class="inline-flex items-center space-x-2 bg-indigo-500/10 border border-indigo-500/20 rounded-full px-4 py-1.5 text-xs text-indigo-300 font-medium mb-6">
+            <span class="w-2 h-2 rounded-full bg-indigo-400 animate-pulse"></span>
+            <span>Powered by Meta Llama 3.1</span>
+        </div>
+
+        <h1 class="text-4xl sm:text-6xl font-extrabold text-white tracking-tight leading-tight mb-6">
+            Stop Prompt Engineering.<br>
+            <span class="bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400">
+                Get Instant AI Workflows.
+            </span>
+        </h1>
+
+        <p class="text-slate-400 text-base sm:text-lg max-w-2xl mx-auto mb-8 font-normal leading-relaxed">
+            RibhuAI gives you 1-click smart tools for code review, viral content, cold outreach, and SEO outlines. No complex prompt engineering needed.
+        </p>
+
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <a href="{% url 'dashboard' %}" class="w-full sm:w-auto bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 hover:opacity-90 text-white font-semibold text-base px-8 py-3.5 rounded-xl transition-all shadow-xl shadow-indigo-500/25 flex items-center justify-center space-x-2">
+                <span>Try RibhuAI Free</span>
+                <i class="fa-solid fa-wand-magic-sparkles text-sm"></i>
+            </a>
+            <a href="#features" class="w-full sm:w-auto border border-slate-800 hover:border-slate-700 bg-slate-900/50 text-slate-300 font-medium text-base px-8 py-3.5 rounded-xl transition-all flex items-center justify-center space-x-2">
+                <span>Explore Tools</span>
+            </a>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="py-20 border-t border-slate-900 bg-slate-950">
+        <div class="max-w-6xl mx-auto px-4">
+            <div class="text-center mb-16">
+                <h2 class="text-xs uppercase tracking-widest text-indigo-400 font-bold mb-2">Built for Speed</h2>
+                <p class="text-2xl sm:text-3xl font-bold text-white">1-Click AI Micro-Tools</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- Tool 1 -->
+                <div class="bg-slate-900/60 border border-slate-800/80 p-6 rounded-2xl hover:border-indigo-500/50 transition-all">
+                    <div class="w-12 h-12 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center mb-4">
+                        <i class="fa-solid fa-code text-indigo-400 text-xl"></i>
+                    </div>
+                    <h3 class="font-bold text-white text-base mb-2">Code Reviewer</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed">Instantly spot bugs, vulnerability vectors, and optimize code performance with clean Markdown formatting.</p>
+                </div>
+
+                <!-- Tool 2 -->
+                <div class="bg-slate-900/60 border border-slate-800/80 p-6 rounded-2xl hover:border-sky-500/50 transition-all">
+                    <div class="w-12 h-12 rounded-xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center mb-4">
+                        <i class="fa-brands fa-x-twitter text-sky-400 text-xl"></i>
+                    </div>
+                    <h3 class="font-bold text-white text-base mb-2">Viral Thread Suite</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed">Turn high-level thoughts into structured 5-part X/Twitter threads designed for maximum engagement.</p>
+                </div>
+
+                <!-- Tool 3 -->
+                <div class="bg-slate-900/60 border border-slate-800/80 p-6 rounded-2xl hover:border-emerald-500/50 transition-all">
+                    <div class="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mb-4">
+                        <i class="fa-solid fa-envelope-open-text text-emerald-400 text-xl"></i>
+                    </div>
+                    <h3 class="font-bold text-white text-base mb-2">B2B Cold Emails</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed">Generate short, high-converting B2B outreach emails targeted specifically at decision-makers.</p>
+                </div>
+
+                <!-- Tool 4 -->
+                <div class="bg-slate-900/60 border border-slate-800/80 p-6 rounded-2xl hover:border-orange-500/50 transition-all">
+                    <div class="w-12 h-12 rounded-xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center mb-4">
+                        <i class="fa-solid fa-magnifying-glass-chart text-orange-400 text-xl"></i>
+                    </div>
+                    <h3 class="font-bold text-white text-base mb-2">SEO Blog Outlines</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed">Generate search engine structured content outlines complete with H1s, H2s, and target keywords.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section id="pricing" class="py-20 border-t border-slate-900 bg-slate-900/30">
+        <div class="max-w-4xl mx-auto px-4">
+            <div class="text-center mb-16">
+                <h2 class="text-xs uppercase tracking-widest text-indigo-400 font-bold mb-2">Transparent Pricing</h2>
+                <p class="text-2xl sm:text-3xl font-bold text-white">Pay Only For What You Use</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch">
+                <!-- Free Tier -->
+                <div class="bg-slate-900 border border-slate-800 p-8 rounded-2xl flex flex-col justify-between">
+                    <div>
+                        <h3 class="text-lg font-bold text-white mb-2">Starter</h3>
+                        <p class="text-slate-400 text-sm mb-6">Perfect for testing the waters.</p>
+                        <div class="text-3xl font-extrabold text-white mb-6">$0</div>
+                        <ul class="space-y-3 text-sm text-slate-300 mb-8">
+                            <li class="flex items-center space-x-2">
+                                <i class="fa-solid fa-check text-indigo-400 text-xs"></i>
+                                <span><strong>5 Free Credits</strong> on signup</span>
+                            </li>
+                            <li class="flex items-center space-x-2">
+                                <i class="fa-solid fa-check text-indigo-400 text-xs"></i>
+                                <span>Access to all 1-Click Smart Tools</span>
+                            </li>
+                            <li class="flex items-center space-x-2">
+                                <i class="fa-solid fa-check text-indigo-400 text-xs"></i>
+                                <span>Markdown & Syntax Highlighting</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <a href="{% url 'dashboard' %}" class="w-full text-center bg-slate-800 hover:bg-slate-700 text-white font-medium py-3 rounded-xl transition-all text-sm">
+                        Get Started Free
+                    </a>
+                </div>
+
+                <!-- Pro Tier -->
+                <div class="bg-slate-900 border-2 border-indigo-500/80 p-8 rounded-2xl flex flex-col justify-between relative shadow-2xl shadow-indigo-500/10">
+                    <div class="absolute -top-3.5 right-6 bg-indigo-600 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+                        Most Popular
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-bold text-white mb-2">Pro Credit Pack</h3>
+                        <p class="text-slate-400 text-sm mb-6">For power users and creators.</p>
+                        <div class="text-3xl font-extrabold text-white mb-6">$10 <span class="text-slate-500 text-sm font-normal">/ 100 Credits</span></div>
+                        <ul class="space-y-3 text-sm text-slate-300 mb-8">
+                            <li class="flex items-center space-x-2">
+                                <i class="fa-solid fa-check text-indigo-400 text-xs"></i>
+                                <span><strong>100 High-Speed AI Generations</strong></span>
+                            </li>
+                            <li class="flex items-center space-x-2">
+                                <i class="fa-solid fa-check text-indigo-400 text-xs"></i>
+                                <span>Instant top-up via checkout</span>
+                            </li>
+                            <li class="flex items-center space-x-2">
+                                <i class="fa-solid fa-check text-indigo-400 text-xs"></i>
+                                <span>Full prompt output history</span>
+                            </li>
+                            <li class="flex items-center space-x-2">
+                                <i class="fa-solid fa-check text-indigo-400 text-xs"></i>
+                                <span>No monthly subscriptions required</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <a href="{% url 'dashboard' %}" class="w-full text-center bg-indigo-600 hover:bg-indigo-500 text-white font-medium py-3 rounded-xl transition-all shadow-lg shadow-indigo-600/30 text-sm">
+                        Buy Credits
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="mt-auto border-t border-slate-900 py-8 bg-slate-950 text-slate-500 text-xs">
+        <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="flex items-center space-x-2">
+                <span class="font-bold text-slate-400">RibhuAI</span>
+                <span>© 2026. All rights reserved.</span>
+            </div>
+            <div class="text-slate-600">
+                Powered by Llama-3.1-8B & Django
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>

@@ -120,3 +120,9 @@ def lemon_squeezy_webhook(request):
 
     except Exception as e:
         return HttpResponse(f"Webhook Error: {str(e)}", status=400)
+
+def landing_page(request):
+    """
+    Renders the public landing page.
+    """
+    return render(request, 'saas_app/landing.html')
