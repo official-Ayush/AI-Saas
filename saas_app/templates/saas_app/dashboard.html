@@ -5,14 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RibhuAI — Workspace</title>
     
-    <!-- Tailwind CSS with Typography Plugin for Markdown formatting -->
+    <!-- Tailwind CSS with Typography Plugin -->
     <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
     
-    <!-- FontAwesome Icons -->
-  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- FontAwesome (Icons) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Marked.js (Markdown Parser) & Highlight.js (Code Syntax Highlighting) -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/16.3.0/marked.umd.min.js"></script>
+    <!-- Marked.js (Markdown) & Highlight.js (Code Colors) -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/atom-one-dark.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
 
@@ -43,11 +43,11 @@
                     <span>Upgrade</span>
                 </a>
 
-                <!-- User Profile Pill & Logout -->
-                <div class="flex items-center space-x-3 text-xs text-slate-400 border-l border-slate-800 pl-4 hidden sm:flex">
-                    <span class="flex items-center"><i class="fa-regular fa-user mr-1.5"></i> {{ user.username }}</span>
-                    <a href="{% url 'logout' %}" class="text-slate-500 hover:text-red-400 transition-colors" title="Log out">
-                        <i class="fa-solid fa-right-from-bracket text-sm"></i>
+                <!-- User Profile & Explicit Text Logout Button -->
+                <div class="flex items-center space-x-3 text-sm text-slate-300 border-l border-slate-800 pl-4">
+                    <span class="font-medium">{{ user.username }}</span>
+                    <a href="{% url 'logout' %}" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 px-3 py-1.5 rounded-lg transition-colors text-xs font-semibold">
+                        Logout
                     </a>
                 </div>
             </div>
@@ -64,7 +64,7 @@
         </div>
         {% endif %}
 
-        <!-- Smart Templates Grid (The USP) -->
+        <!-- Smart Templates Grid -->
         <div>
             <h2 class="text-sm font-semibold text-slate-400 mb-3 uppercase tracking-wider">1-Click Smart Tools</h2>
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -118,6 +118,7 @@
 
         <!-- AI Output Result -->
         {% if ai_result %}
+       
         <div class="bg-slate-900 border border-indigo-500/50 rounded-2xl p-6 shadow-2xl relative" id="result-container">
             <div class="flex items-center justify-between mb-4 pb-4 border-b border-slate-800">
                 <div class="flex items-center space-x-2 text-indigo-400 text-xs font-bold uppercase tracking-wider">
@@ -129,11 +130,7 @@
                     <span id="copy-text">Copy</span>
                 </button>
             </div>
-            
-            <!-- Hidden raw text from Django -->
-            <!-- Safely pass multiline AI text to Javascript -->
-{{ ai_result|json_script:"ai-result-data" }}
-            
+             {{ ai_result|json_script:"ai-data" }}
             <!-- Where the beautifully formatted markdown will appear -->
             <div id="formatted-output" class="prose prose-invert prose-indigo max-w-none text-sm"></div>
         </div>
@@ -143,6 +140,7 @@
 
     <script>
         // --- 1. Smart Templates Logic ---
+       // --- 1. Smart Templates Logic ---
         const templates = {
             code: "Act as a Senior Software Engineer. Review the following code. Identify any bugs, security vulnerabilities, or performance issues. Then, provide the refactored, optimized version of the code with comments explaining your changes:\n\n[PASTE YOUR CODE HERE]",
             twitter: "Write a highly engaging, 5-part Twitter/X thread about [TOPIC]. The first tweet must have a powerful hook that stops people from scrolling. Use line breaks and relevant emojis. Do not use hashtags.",
@@ -165,35 +163,32 @@
             btn.classList.add('opacity-75', 'cursor-not-allowed');
         });
 
-        // --- 3. Markdown & Syntax Highlighting Logic ---
-      // --- 3. Markdown & Syntax Highlighting Logic ---
-document.addEventListener("DOMContentLoaded", function() {
-    const dataElement = document.getElementById('ai-result-data');
-    
-    if (dataElement) {
-        // Safely parse the exact text sent by Django
-        const rawText = JSON.parse(dataElement.textContent);
-        
-        // Render it to the screen
-        document.getElementById('formatted-output').innerHTML = marked.parse(rawText);
-        
-        // Apply code colors
-        hljs.highlightAll();
-    }
-});
+        // --- 3 & 4. Markdown, Syntax Highlighting & Copy Logic ---
+        document.addEventListener("DOMContentLoaded", function() {
+            const dataElement = document.getElementById('ai-data');
+            if (dataElement) {
+                // Safely read the JSON data injected by Django
+                const rawText = JSON.parse(dataElement.textContent);
+                
+                // Parse Markdown to HTML and render it
+                document.getElementById('formatted-output').innerHTML = marked.parse(rawText);
+                
+                // Apply code colors
+                hljs.highlightAll();
+            }
+        });
 
-// --- 4. Copy to Clipboard ---
-function copyFormattedText() {
-    const dataElement = document.getElementById('ai-result-data');
-    if (dataElement) {
-        const rawText = JSON.parse(dataElement.textContent);
-        navigator.clipboard.writeText(rawText);
-        
-        const copyText = document.getElementById('copy-text');
-        copyText.innerText = 'Copied!';
-        setTimeout(() => { copyText.innerText = 'Copy'; }, 2000);
-    }
-}
+        function copyFormattedText() {
+            const dataElement = document.getElementById('ai-data');
+            if (dataElement) {
+                const rawText = JSON.parse(dataElement.textContent);
+                navigator.clipboard.writeText(rawText);
+                
+                const copyText = document.getElementById('copy-text');
+                copyText.innerText = 'Copied!';
+                setTimeout(() => { copyText.innerText = 'Copy'; }, 2000);
+            }
+        }
     </script>
 </body>
 </html>
