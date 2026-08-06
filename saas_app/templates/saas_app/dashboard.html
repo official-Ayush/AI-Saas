@@ -24,12 +24,12 @@
     <!-- Top Navigation Bar -->
     <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-            <div class="flex items-center space-x-3">
+            <a href="{% url 'landing' %}" class="flex items-center space-x-3">
                 <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center shadow-lg shadow-indigo-500/20">
                     <i class="fa-solid fa-wand-magic-sparkles text-white text-base"></i>
                 </div>
                 <span class="font-bold text-lg tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400">RibhuAI</span>
-            </div>
+            </a>
 
             <div class="flex items-center space-x-4">
                 <div class="bg-slate-900 border border-slate-800 rounded-full px-4 py-1.5 flex items-center space-x-2">
@@ -37,10 +37,19 @@
                     <span class="text-xs text-slate-400">Credits:</span>
                     <span class="text-sm font-bold text-white">{{ credits }}</span>
                 </div>
-                <a href="{% url 'checkout' %}" class="bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs px-4 py-2 rounded-full transition-all flex items-center space-x-2">
+                
+                <a href="{% url 'checkout' %}" class="bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs px-4 py-2 rounded-full transition-all flex items-center space-x-2 shadow-lg shadow-indigo-500/20">
                     <i class="fa-solid fa-bolt"></i>
                     <span>Upgrade</span>
                 </a>
+
+                <!-- User Profile Pill & Logout -->
+                <div class="flex items-center space-x-3 text-xs text-slate-400 border-l border-slate-800 pl-4 hidden sm:flex">
+                    <span class="flex items-center"><i class="fa-regular fa-user mr-1.5"></i> {{ user.username }}</span>
+                    <a href="{% url 'logout' %}" class="text-slate-500 hover:text-red-400 transition-colors" title="Log out">
+                        <i class="fa-solid fa-right-from-bracket text-sm"></i>
+                    </a>
+                </div>
             </div>
         </div>
     </header>
@@ -144,7 +153,6 @@
             const textarea = document.getElementById('prompt-input');
             textarea.value = templates[type];
             textarea.focus();
-            // Optional: highlight the bracketed text for easy replacement
             textarea.setSelectionRange(textarea.value.indexOf('['), textarea.value.lastIndexOf(']') + 1);
         }
 
@@ -161,13 +169,8 @@
             const rawOutputElement = document.getElementById('raw-ai-output');
             
             if (rawOutputElement) {
-                // Decode the text sent by Django safely
                 let rawText = rawOutputElement.textContent || rawOutputElement.innerText;
-                
-                // Parse Markdown to HTML
                 document.getElementById('formatted-output').innerHTML = marked.parse(rawText);
-                
-                // Apply syntax highlighting to any <code> blocks
                 hljs.highlightAll();
             }
         });

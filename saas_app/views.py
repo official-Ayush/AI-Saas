@@ -1,5 +1,7 @@
 import os
 from django.shortcuts import render, redirect
+from django.contrib.auth import login, logout
+from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponse
@@ -13,11 +15,74 @@ client = InferenceClient(
     token=os.environ.get("HF_TOKEN")
 )
 
+
 def landing_page(request):
     """
     Renders the public landing page.
     """
     return render(request, 'saas_app/landing.html')
+
+
+def signup_view(request):
+    """
+    Handles new user registration and awards 5 free credits.
+    """
+    if request.user.is_authenticated:
+        return redirect('dashboard')
+
+    error_message = None
+
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        email = request.POST.get('email')
+        password = request.POST.get('password')
+        password_confirm = request.POST.get('password_confirm')
+
+        if password != password_confirm:
+            error_message = "Passwords do not match."
+        elif User.objects.filter(username=username).exists():
+            error_message = "Username is already taken."
+        else:
+            # Create user and give 5 free credits
+            user = User.objects.create_user(username=username, email=email, password=password)
+            user.credits = 5
+            user.tier = 'FREE'
+            user.save()
+
+            # Auto-login after registration
+            login(request, user)
+            return redirect('dashboard')
+
+    return render(request, 'saas_app/signup.html', {'error_message': error_message})
+
+
+def login_view(request):
+    """
+    Handles user login.
+    """
+    if request.user.is_authenticated:
+        return redirect('dashboard')
+
+    error_message = None
+
+    if request.method == 'POST':
+        form = AuthenticationForm(request, data=request.POST)
+        if form.is_valid():
+            user = form.get_user()
+            login(request, user)
+            return redirect('dashboard')
+        else:
+            error_message = "Invalid username or password."
+
+    return render(request, 'saas_app/login.html', {'error_message': error_message})
+
+
+def logout_view(request):
+    """
+    Logs out the user and redirects to the landing page.
+    """
+    logout(request)
+    return redirect('landing')
 
 
 @login_required
