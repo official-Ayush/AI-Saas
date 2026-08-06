@@ -9,7 +9,7 @@
     <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
     
     <!-- FontAwesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     
     <!-- Marked.js (Markdown Parser) & Highlight.js (Code Syntax Highlighting) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/16.3.0/marked.umd.min.js"></script>
@@ -131,7 +131,8 @@
             </div>
             
             <!-- Hidden raw text from Django -->
-            <div id="raw-ai-output" class="hidden">{{ ai_result|escapejs }}</div>
+            <!-- Safely pass multiline AI text to Javascript -->
+{{ ai_result|json_script:"ai-result-data" }}
             
             <!-- Where the beautifully formatted markdown will appear -->
             <div id="formatted-output" class="prose prose-invert prose-indigo max-w-none text-sm"></div>
@@ -165,25 +166,34 @@
         });
 
         // --- 3. Markdown & Syntax Highlighting Logic ---
-        document.addEventListener("DOMContentLoaded", function() {
-            const rawOutputElement = document.getElementById('raw-ai-output');
-            
-            if (rawOutputElement) {
-                let rawText = rawOutputElement.textContent || rawOutputElement.innerText;
-                document.getElementById('formatted-output').innerHTML = marked.parse(rawText);
-                hljs.highlightAll();
-            }
-        });
+      // --- 3. Markdown & Syntax Highlighting Logic ---
+document.addEventListener("DOMContentLoaded", function() {
+    const dataElement = document.getElementById('ai-result-data');
+    
+    if (dataElement) {
+        // Safely parse the exact text sent by Django
+        const rawText = JSON.parse(dataElement.textContent);
+        
+        // Render it to the screen
+        document.getElementById('formatted-output').innerHTML = marked.parse(rawText);
+        
+        // Apply code colors
+        hljs.highlightAll();
+    }
+});
 
-        // --- 4. Copy to Clipboard ---
-        function copyFormattedText() {
-            const rawOutputElement = document.getElementById('raw-ai-output');
-            navigator.clipboard.writeText(rawOutputElement.textContent || rawOutputElement.innerText);
-            
-            const copyText = document.getElementById('copy-text');
-            copyText.innerText = 'Copied!';
-            setTimeout(() => { copyText.innerText = 'Copy'; }, 2000);
-        }
+// --- 4. Copy to Clipboard ---
+function copyFormattedText() {
+    const dataElement = document.getElementById('ai-result-data');
+    if (dataElement) {
+        const rawText = JSON.parse(dataElement.textContent);
+        navigator.clipboard.writeText(rawText);
+        
+        const copyText = document.getElementById('copy-text');
+        copyText.innerText = 'Copied!';
+        setTimeout(() => { copyText.innerText = 'Copy'; }, 2000);
+    }
+}
     </script>
 </body>
 </html>
