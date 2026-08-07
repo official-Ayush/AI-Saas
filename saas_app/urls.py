@@ -7,6 +7,10 @@ urlpatterns = [
     path('login/', views.login_view, name='login'),
     path('logout/', views.logout_view, name='logout'),
     path('dashboard/', views.dashboard, name='dashboard'),
+    
+    # New route for the AJAX stream
+    path('stream/', views.stream_generate, name='stream_generate'), 
+    
     path('checkout/', views.create_checkout_session, name='checkout'),
     path('webhook/', views.gumroad_webhook, name='webhook'),
 ]

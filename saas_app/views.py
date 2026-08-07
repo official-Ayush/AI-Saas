@@ -1,10 +1,11 @@
 import os
+import json
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, logout
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
-from django.http import HttpResponse
+from django.http import HttpResponse, StreamingHttpResponse, JsonResponse
 from huggingface_hub import InferenceClient
 from .models import AIGeneration, User
 
@@ -17,21 +18,14 @@ client = InferenceClient(
 
 
 def landing_page(request):
-    """
-    Renders the public landing page.
-    """
     return render(request, 'saas_app/landing.html')
 
 
 def signup_view(request):
-    """
-    Handles new user registration and awards 5 free credits.
-    """
     if request.user.is_authenticated:
         return redirect('dashboard')
 
     error_message = None
-
     if request.method == 'POST':
         username = request.POST.get('username')
         email = request.POST.get('email')
@@ -43,13 +37,10 @@ def signup_view(request):
         elif User.objects.filter(username=username).exists():
             error_message = "Username is already taken."
         else:
-            # Create user and give 5 free credits
             user = User.objects.create_user(username=username, email=email, password=password)
             user.credits = 5
             user.tier = 'FREE'
             user.save()
-
-            # Auto-login after registration
             login(request, user)
             return redirect('dashboard')
 
@@ -57,14 +48,10 @@ def signup_view(request):
 
 
 def login_view(request):
-    """
-    Handles user login.
-    """
     if request.user.is_authenticated:
         return redirect('dashboard')
 
     error_message = None
-
     if request.method == 'POST':
         form = AuthenticationForm(request, data=request.POST)
         if form.is_valid():
@@ -78,64 +65,85 @@ def login_view(request):
 
 
 def logout_view(request):
-    """
-    Logs out the user and redirects to the landing page.
-    """
     logout(request)
     return redirect('landing')
 
 
 @login_required
 def dashboard(request):
+    """
+    Renders the dashboard UI. (AI generation is now handled via AJAX).
+    """
     user = request.user
-    ai_result = None
-    error_message = None
-
-    if request.method == "POST":
-        prompt = request.POST.get("prompt")
-        
-        if user.credits > 0:
-            try:
-                response = client.chat_completion(
-                    messages=[
-                        {"role": "system", "content": "You are a helpful AI assistant."},
-                        {"role": "user", "content": prompt}
-                    ],
-                    max_tokens=500
-                )
-                ai_result = response.choices[0].message.content
-                
-                user.credits -= 1
-                user.save()
-                
-                AIGeneration.objects.create(
-                    user=user,
-                    prompt=prompt,
-                    result=ai_result,
-                    credits_cost=1
-                )
-            except Exception as e:
-                error_message = f"Hugging Face API Error: {str(e)}"
-        else:
-            error_message = "You are out of credits! Please purchase more credits to continue."
-
     history = AIGeneration.objects.filter(user=user).order_by('-created_at')[:5]
 
     context = {
         'tier': user.tier,
         'credits': user.credits,
         'history': history,
-        'ai_result': ai_result,
-        'error_message': error_message,
     }
     return render(request, 'saas_app/dashboard.html', context)
 
 
 @login_required
+def stream_generate(request):
+    """
+    API Endpoint that streams the AI response chunk-by-chunk back to the browser.
+    """
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            prompt = data.get("prompt")
+            user = request.user
+
+            # Check credits before generating
+            if user.credits <= 0:
+                return JsonResponse({"error": "You are out of credits! Please upgrade to continue."}, status=402)
+
+            def generate_stream():
+                full_text = ""
+                try:
+                    # Request the stream from Hugging Face
+                    stream = client.chat_completion(
+                        messages=[
+                            {"role": "system", "content": "You are a helpful AI assistant. Format your responses in clean Markdown."},
+                            {"role": "user", "content": prompt}
+                        ],
+                        max_tokens=800,
+                        stream=True  # Tells HF to stream the response
+                    )
+                    
+                    # Yield chunks as they arrive
+                    for chunk in stream:
+                        if chunk.choices and chunk.choices[0].delta.content:
+                            text_chunk = chunk.choices[0].delta.content
+                            full_text += text_chunk
+                            yield text_chunk
+                    
+                    # Once the stream is entirely finished, deduct the credit and save history
+                    if full_text:
+                        user.credits -= 1
+                        user.save()
+                        AIGeneration.objects.create(
+                            user=user,
+                            prompt=prompt,
+                            result=full_text,
+                            credits_cost=1
+                        )
+                except Exception as e:
+                    yield f"\n\n**API Error:** {str(e)}"
+
+            # Return a Django Streaming Response
+            return StreamingHttpResponse(generate_stream(), content_type='text/plain')
+            
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=400)
+            
+    return JsonResponse({"error": "Invalid request method"}, status=405)
+
+
+@login_required
 def create_checkout_session(request):
-    """
-    Redirects the user to your Gumroad checkout page.
-    """
     gumroad_url = "https://gumroad.com/l/YOUR_LINK_HERE" 
     checkout_url = f"{gumroad_url}?user_id={request.user.id}"
     return redirect(checkout_url)
@@ -143,12 +151,8 @@ def create_checkout_session(request):
 
 @csrf_exempt
 def gumroad_webhook(request):
-    """
-    Handles incoming webhook notifications from Gumroad.
-    """
     if request.method == 'POST':
         user_id = request.POST.get('user_id')
-        
         if user_id:
             try:
                 user = User.objects.get(id=user_id)
@@ -158,5 +162,4 @@ def gumroad_webhook(request):
                 return HttpResponse("Credits added successfully!", status=200)
             except User.DoesNotExist:
                 return HttpResponse("User not found", status=404)
-                
     return HttpResponse("Method not allowed", status=405)

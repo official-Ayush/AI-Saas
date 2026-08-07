@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en" class="dark scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,141 +11,132 @@
     <!-- FontAwesome (Icons) -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Marked.js (Markdown) & Highlight.js (Code Colors) -->
+    <!-- Marked.js & Highlight.js -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/atom-one-dark.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
 
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <style>body { font-family: 'Inter', sans-serif; }</style>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        /* Custom scrollbar for output area */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+        /* Blinking cursor for AI typing effect */
+        .typing-cursor::after { content: '▋'; animation: blink 1s step-start infinite; color: #818cf8; }
+        @keyframes blink { 50% { opacity: 0; } }
+    </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col antialiased">
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col antialiased selection:bg-indigo-500 selection:text-white">
 
-    <!-- Top Navigation Bar -->
-    <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-            <a href="{% url 'landing' %}" class="flex items-center space-x-3">
-                <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+    <!-- Navbar -->
+    <header class="border-b border-slate-800 bg-slate-950/80 backdrop-blur-md sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
+            <a href="{% url 'landing' %}" class="flex items-center space-x-3 group">
+                <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center shadow-lg group-hover:shadow-indigo-500/40 transition-all">
                     <i class="fa-solid fa-wand-magic-sparkles text-white text-base"></i>
                 </div>
-                <span class="font-bold text-lg tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400">RibhuAI</span>
+                <span class="font-bold text-lg tracking-tight text-white">RibhuAI</span>
             </a>
 
             <div class="flex items-center space-x-4">
-                <div class="bg-slate-900 border border-slate-800 rounded-full px-4 py-1.5 flex items-center space-x-2">
-                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                <div class="bg-slate-900 border border-slate-700/50 rounded-full px-4 py-1.5 flex items-center space-x-2">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_rgba(52,211,153,0.8)]"></span>
                     <span class="text-xs text-slate-400">Credits:</span>
-                    <span class="text-sm font-bold text-white">{{ credits }}</span>
+                    <span id="credit-counter" class="text-sm font-bold text-white">{{ credits }}</span>
                 </div>
-                
-                <a href="{% url 'checkout' %}" class="bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs px-4 py-2 rounded-full transition-all flex items-center space-x-2 shadow-lg shadow-indigo-500/20">
-                    <i class="fa-solid fa-bolt"></i>
+                <a href="{% url 'checkout' %}" class="bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs px-4 py-2 rounded-full transition-all flex items-center space-x-2">
+                    <i class="fa-solid fa-bolt text-yellow-300"></i>
                     <span>Upgrade</span>
                 </a>
-
-                <!-- User Profile & Explicit Text Logout Button -->
                 <div class="flex items-center space-x-3 text-sm text-slate-300 border-l border-slate-800 pl-4">
-                    <span class="font-medium">{{ user.username }}</span>
-                    <a href="{% url 'logout' %}" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 px-3 py-1.5 rounded-lg transition-colors text-xs font-semibold">
-                        Logout
-                    </a>
+                    <span class="font-medium hidden sm:block">{{ user.username }}</span>
+                    <a href="{% url 'logout' %}" class="text-slate-400 hover:text-white transition-colors text-xs font-semibold bg-slate-800 px-3 py-1.5 rounded-lg">Logout</a>
                 </div>
             </div>
         </div>
     </header>
 
-    <main class="flex-1 max-w-5xl w-full mx-auto px-4 py-8 space-y-6">
+    <main class="flex-1 max-w-4xl w-full mx-auto px-4 py-8 flex flex-col gap-8">
 
-        <!-- Error Banner -->
-        {% if error_message %}
-        <div class="bg-red-500/10 border border-red-500/30 text-red-400 px-4 py-3 rounded-xl flex items-center space-x-3">
+        <!-- Interactive Error Banner (Hidden by default) -->
+        <div id="error-banner" class="hidden bg-red-500/10 border border-red-500/30 text-red-400 px-4 py-3 rounded-xl flex items-center space-x-3">
             <i class="fa-solid fa-triangle-exclamation"></i>
-            <span class="text-sm">{{ error_message }}</span>
+            <span id="error-text" class="text-sm"></span>
         </div>
-        {% endif %}
 
-        <!-- Smart Templates Grid -->
+        <!-- 1-Click Tools -->
         <div>
-            <h2 class="text-sm font-semibold text-slate-400 mb-3 uppercase tracking-wider">1-Click Smart Tools</h2>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <h2 class="text-xs font-bold text-slate-500 mb-4 uppercase tracking-widest">Smart Workflows</h2>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
                 <button onclick="applyTemplate('code')" class="text-left bg-slate-900 border border-slate-800 p-4 rounded-xl hover:border-indigo-500 hover:bg-slate-800 transition-all group">
-                    <i class="fa-solid fa-code text-indigo-400 mb-2 text-xl group-hover:scale-110 transition-transform"></i>
-                    <h3 class="font-medium text-sm text-slate-200">Code Reviewer</h3>
-                    <p class="text-xs text-slate-500 mt-1">Find bugs and optimize code.</p>
+                    <i class="fa-solid fa-code text-indigo-400 mb-2 text-lg"></i>
+                    <h3 class="font-semibold text-sm text-slate-200">Code Review</h3>
                 </button>
                 <button onclick="applyTemplate('twitter')" class="text-left bg-slate-900 border border-slate-800 p-4 rounded-xl hover:border-sky-500 hover:bg-slate-800 transition-all group">
-                    <i class="fa-brands fa-x-twitter text-sky-400 mb-2 text-xl group-hover:scale-110 transition-transform"></i>
-                    <h3 class="font-medium text-sm text-slate-200">Viral Thread</h3>
-                    <p class="text-xs text-slate-500 mt-1">Write an engaging social thread.</p>
+                    <i class="fa-brands fa-x-twitter text-sky-400 mb-2 text-lg"></i>
+                    <h3 class="font-semibold text-sm text-slate-200">Viral Thread</h3>
                 </button>
                 <button onclick="applyTemplate('email')" class="text-left bg-slate-900 border border-slate-800 p-4 rounded-xl hover:border-emerald-500 hover:bg-slate-800 transition-all group">
-                    <i class="fa-solid fa-envelope-open-text text-emerald-400 mb-2 text-xl group-hover:scale-110 transition-transform"></i>
-                    <h3 class="font-medium text-sm text-slate-200">Cold Email</h3>
-                    <p class="text-xs text-slate-500 mt-1">High-converting B2B emails.</p>
+                    <i class="fa-solid fa-envelope-open-text text-emerald-400 mb-2 text-lg"></i>
+                    <h3 class="font-semibold text-sm text-slate-200">Cold Email</h3>
                 </button>
                 <button onclick="applyTemplate('seo')" class="text-left bg-slate-900 border border-slate-800 p-4 rounded-xl hover:border-orange-500 hover:bg-slate-800 transition-all group">
-                    <i class="fa-solid fa-magnifying-glass-chart text-orange-400 mb-2 text-xl group-hover:scale-110 transition-transform"></i>
-                    <h3 class="font-medium text-sm text-slate-200">SEO Blog Post</h3>
-                    <p class="text-xs text-slate-500 mt-1">Rank higher on Google.</p>
+                    <i class="fa-solid fa-magnifying-glass-chart text-orange-400 mb-2 text-lg"></i>
+                    <h3 class="font-semibold text-sm text-slate-200">SEO Blog</h3>
                 </button>
             </div>
         </div>
 
-        <!-- AI Generation Area -->
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl relative overflow-hidden mt-6">
-            <div class="flex items-center justify-between mb-4">
-                <h2 class="text-lg font-semibold text-white flex items-center space-x-2">
-                    <i class="fa-solid fa-terminal text-indigo-400"></i>
-                    <span>Prompt Studio</span>
-                </h2>
-                <span class="text-xs font-medium text-indigo-300 bg-indigo-500/10 border border-indigo-500/20 px-2.5 py-1 rounded-md">Costs 1 credit</span>
-            </div>
-
-            <form method="POST" id="ai-form" class="space-y-4">
-                {% csrf_token %}
-                <textarea id="prompt-input" name="prompt" rows="5" 
-                          class="w-full bg-slate-950/70 border border-slate-700 rounded-xl p-4 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all resize-y" 
-                          placeholder="Type your prompt here, or select a smart tool from above..." required></textarea>
-
-                <div class="flex justify-end">
-                    <button type="submit" id="submit-btn" class="bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-sm px-6 py-2.5 rounded-xl transition-all flex items-center space-x-2 shadow-lg shadow-indigo-600/30">
-                        <i class="fa-solid fa-paper-plane text-xs"></i>
-                        <span>Generate Response</span>
+        <!-- Main Workspace Area -->
+        <div class="flex flex-col border border-slate-800 bg-slate-900/50 rounded-2xl shadow-2xl overflow-hidden relative">
+            
+            <!-- Output Container (Hidden initially, expands smoothly) -->
+            <div id="output-section" class="hidden border-b border-slate-800 bg-slate-950 p-6 sm:p-8 max-h-[60vh] overflow-y-auto">
+                <div class="flex items-center justify-between mb-6">
+                    <div class="flex items-center space-x-2 text-indigo-400 text-xs font-bold uppercase tracking-wider">
+                        <i class="fa-solid fa-robot"></i>
+                        <span>AI Response</span>
+                    </div>
+                    <button onclick="copyOutput()" id="copy-btn" class="hidden text-slate-400 hover:text-white text-xs flex items-center space-x-1 bg-slate-800 px-3 py-1.5 rounded-lg transition-colors">
+                        <i class="fa-regular fa-copy"></i>
+                        <span id="copy-text">Copy</span>
                     </button>
                 </div>
-            </form>
-        </div>
-
-        <!-- AI Output Result -->
-        {% if ai_result %}
-       
-        <div class="bg-slate-900 border border-indigo-500/50 rounded-2xl p-6 shadow-2xl relative" id="result-container">
-            <div class="flex items-center justify-between mb-4 pb-4 border-b border-slate-800">
-                <div class="flex items-center space-x-2 text-indigo-400 text-xs font-bold uppercase tracking-wider">
-                    <i class="fa-solid fa-robot"></i>
-                    <span>AI Result</span>
-                </div>
-                <button onclick="copyFormattedText()" class="text-slate-400 hover:text-white text-xs flex items-center space-x-1 bg-slate-800 px-3 py-1.5 rounded-lg transition-colors">
-                    <i class="fa-regular fa-copy"></i>
-                    <span id="copy-text">Copy</span>
-                </button>
+                
+                <!-- The streaming text appears here -->
+                <div id="formatted-output" class="prose prose-invert prose-indigo max-w-none text-sm text-slate-300"></div>
             </div>
-             {{ ai_result|json_script:"ai-data" }}
-            <!-- Where the beautifully formatted markdown will appear -->
-            <div id="formatted-output" class="prose prose-invert prose-indigo max-w-none text-sm"></div>
-        </div>
-        {% endif %}
 
+            <!-- Input Form Area -->
+            <div class="p-4 sm:p-6 bg-slate-900">
+                <form id="ai-form" class="relative">
+                    {% csrf_token %}
+                    <textarea id="prompt-input" rows="4" 
+                              class="w-full bg-slate-950 border border-slate-700 rounded-xl p-4 pr-12 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all resize-y" 
+                              placeholder="Type your prompt here, or select a workflow above..." required></textarea>
+
+                    <div class="flex items-center justify-between mt-3">
+                        <span class="text-xs font-medium text-slate-500 bg-slate-800 px-2.5 py-1 rounded-md">Costs 1 credit</span>
+                        <button type="submit" id="submit-btn" class="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-sm px-6 py-2.5 rounded-xl transition-all flex items-center space-x-2">
+                            <span>Generate</span>
+                            <i class="fa-solid fa-paper-plane text-xs"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </main>
 
     <script>
-        // --- 1. Smart Templates Logic ---
-       // --- 1. Smart Templates Logic ---
+        // 1. Smart Templates
         const templates = {
-            code: "Act as a Senior Software Engineer. Review the following code. Identify any bugs, security vulnerabilities, or performance issues. Then, provide the refactored, optimized version of the code with comments explaining your changes:\n\n[PASTE YOUR CODE HERE]",
-            twitter: "Write a highly engaging, 5-part Twitter/X thread about [TOPIC]. The first tweet must have a powerful hook that stops people from scrolling. Use line breaks and relevant emojis. Do not use hashtags.",
-            email: "Write a short, punchy B2B cold email pitching [YOUR PRODUCT/SERVICE] to [TARGET AUDIENCE]. Keep it under 100 words. Focus on their pain points, provide a clear value proposition, and end with a low-friction call to action.",
-            seo: "Write a comprehensive, SEO-optimized blog post outline about [TOPIC]. Include an H1 title, a catchy introduction hook, 4-5 H2 sections with bullet points for what to cover, and a conclusion. Suggest 3 long-tail keywords to target."
+            code: "Act as a Senior Software Engineer. Review the following code. Identify bugs, vulnerabilities, and optimize it:\n\n[PASTE YOUR CODE HERE]",
+            twitter: "Write a highly engaging, 5-part Twitter/X thread about [TOPIC]. Hook the reader instantly. Use line breaks and emojis.",
+            email: "Write a short, punchy B2B cold email pitching [YOUR PRODUCT] to [TARGET AUDIENCE]. Keep it under 100 words. Include a clear call to action.",
+            seo: "Write a comprehensive, SEO-optimized blog post outline about [TOPIC]. Include an H1, 4-5 H2s with bullet points, and suggest 3 keywords."
         };
 
         function applyTemplate(type) {
@@ -155,39 +146,105 @@
             textarea.setSelectionRange(textarea.value.indexOf('['), textarea.value.lastIndexOf(']') + 1);
         }
 
-        // --- 2. Loading State Logic ---
-        document.getElementById('ai-form').addEventListener('submit', function() {
-            const btn = document.getElementById('submit-btn');
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fa-solid fa-spinner animate-spin text-xs"></i> <span>Processing...</span>';
-            btn.classList.add('opacity-75', 'cursor-not-allowed');
-        });
+        // 2. Real-Time AJAX Streaming Logic
+        document.getElementById('ai-form').addEventListener('submit', async function(e) {
+            e.preventDefault(); // Stop page reload
 
-        // --- 3 & 4. Markdown, Syntax Highlighting & Copy Logic ---
-        document.addEventListener("DOMContentLoaded", function() {
-            const dataElement = document.getElementById('ai-data');
-            if (dataElement) {
-                // Safely read the JSON data injected by Django
-                const rawText = JSON.parse(dataElement.textContent);
+            const promptText = document.getElementById('prompt-input').value;
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            
+            // UI Elements
+            const submitBtn = document.getElementById('submit-btn');
+            const outputSection = document.getElementById('output-section');
+            const formattedOutput = document.getElementById('formatted-output');
+            const copyBtn = document.getElementById('copy-btn');
+            const errorBanner = document.getElementById('error-banner');
+
+            // Reset UI for generating state
+            errorBanner.classList.add('hidden');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> <span>Generating...</span>';
+            submitBtn.classList.add('opacity-75', 'cursor-not-allowed');
+            
+            outputSection.classList.remove('hidden');
+            formattedOutput.innerHTML = '';
+            formattedOutput.classList.add('typing-cursor'); // Add blinking cursor
+            copyBtn.classList.add('hidden');
+
+            try {
+                // Fetch to Django Stream API
+                const response = await fetch("{% url 'stream_generate' %}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrfToken
+                    },
+                    body: JSON.stringify({ prompt: promptText })
+                });
+
+                if (!response.ok) {
+                    const errData = await response.json();
+                    throw new Error(errData.error || "An error occurred");
+                }
+
+                // Read the Stream
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder("utf-8");
+                let rawMarkdown = "";
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+
+                    // Decode chunk and append to our markdown string
+                    const chunk = decoder.decode(value, { stream: true });
+                    rawMarkdown += chunk;
+
+                    // Parse to HTML instantly and scroll to bottom
+                    formattedOutput.innerHTML = marked.parse(rawMarkdown);
+                    outputSection.scrollTop = outputSection.scrollHeight;
+                }
+
+                // Stream finished successfully
+                formattedOutput.classList.remove('typing-cursor');
+                copyBtn.classList.remove('hidden');
                 
-                // Parse Markdown to HTML and render it
-                document.getElementById('formatted-output').innerHTML = marked.parse(rawText);
-                
-                // Apply code colors
+                // Store raw text for copying
+                formattedOutput.dataset.raw = rawMarkdown;
+
+                // Apply code syntax colors to final output
                 hljs.highlightAll();
+
+                // Deduct credit visually from the nav bar
+                const creditEl = document.getElementById('credit-counter');
+                let currentCredits = parseInt(creditEl.innerText);
+                if (!isNaN(currentCredits) && currentCredits > 0) {
+                    creditEl.innerText = currentCredits - 1;
+                }
+
+            } catch (error) {
+                // Handle out of credits or API errors
+                outputSection.classList.add('hidden');
+                errorBanner.classList.remove('hidden');
+                document.getElementById('error-text').innerText = error.message;
+            } finally {
+                // Restore Button
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<span>Generate</span> <i class="fa-solid fa-paper-plane text-xs"></i>';
+                submitBtn.classList.remove('opacity-75', 'cursor-not-allowed');
             }
         });
 
-        function copyFormattedText() {
-            const dataElement = document.getElementById('ai-data');
-            if (dataElement) {
-                const rawText = JSON.parse(dataElement.textContent);
-                navigator.clipboard.writeText(rawText);
-                
-                const copyText = document.getElementById('copy-text');
-                copyText.innerText = 'Copied!';
-                setTimeout(() => { copyText.innerText = 'Copy'; }, 2000);
-            }
+        // 3. Copy to Clipboard
+        function copyOutput() {
+            const formattedOutput = document.getElementById('formatted-output');
+            const rawText = formattedOutput.dataset.raw; // Get the unformatted markdown
+            
+            navigator.clipboard.writeText(rawText);
+            
+            const copyText = document.getElementById('copy-text');
+            copyText.innerText = 'Copied!';
+            setTimeout(() => { copyText.innerText = 'Copy'; }, 2000);
         }
     </script>
 </body>
