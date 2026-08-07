@@ -163,3 +163,40 @@ def gumroad_webhook(request):
             except User.DoesNotExist:
                 return HttpResponse("User not found", status=404)
     return HttpResponse("Method not allowed", status=405)
+
+@login_required
+def optimize_prompt(request):
+    """
+    Takes a rough user prompt and uses AI to rewrite it into an expert-level prompt.
+    """
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            raw_prompt = data.get("prompt")
+            
+            if not raw_prompt or len(raw_prompt) < 3:
+                return JsonResponse({"error": "Please type a few words first!"}, status=400)
+
+            # System prompt instructing the AI to act as a prompt engineer
+            system_msg = "You are an expert AI prompt engineer. The user will give you a basic idea. Rewrite it into a highly detailed, professional, and clear prompt. Do not answer the prompt itself. Just provide the improved prompt text. Do not include quotes or intro text."
+            
+            response = client.chat_completion(
+                messages=[
+                    {"role": "system", "content": system_msg},
+                    {"role": "user", "content": f"Optimize this: {raw_prompt}"}
+                ],
+                max_tokens=200
+            )
+            
+            optimized_text = response.choices[0].message.content.strip()
+            
+            # Remove leading/trailing quotes if the AI adds them
+            if optimized_text.startswith('"') and optimized_text.endswith('"'):
+                optimized_text = optimized_text[1:-1]
+
+            return JsonResponse({"optimized_prompt": optimized_text})
+            
+        except Exception as e:
+            return JsonResponse({"error": "Failed to optimize."}, status=400)
+            
+    return JsonResponse({"error": "Invalid request method"}, status=405)

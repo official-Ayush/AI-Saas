@@ -13,4 +13,5 @@ urlpatterns = [
     
     path('checkout/', views.create_checkout_session, name='checkout'),
     path('webhook/', views.gumroad_webhook, name='webhook'),
+    path('optimize/', views.optimize_prompt, name='optimize_prompt'),
 ]

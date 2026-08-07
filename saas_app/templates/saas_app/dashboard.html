@@ -111,16 +111,26 @@
             </div>
 
             <!-- Input Form Area -->
-            <div class="p-4 sm:p-6 bg-slate-900">
+           <!-- Input Form Area -->
+            <div class="p-4 sm:p-6 bg-black">
                 <form id="ai-form" class="relative">
                     {% csrf_token %}
-                    <textarea id="prompt-input" rows="4" 
-                              class="w-full bg-slate-950 border border-slate-700 rounded-xl p-4 pr-12 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all resize-y" 
-                              placeholder="Type your prompt here, or select a workflow above..." required></textarea>
+                    
+                    <div class="relative">
+                        <textarea id="prompt-input" rows="4" 
+                                  class="w-full bg-zinc-900/50 border border-zinc-800 rounded-xl p-4 pb-12 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-zinc-500 focus:ring-1 focus:ring-zinc-500 transition-all resize-y" 
+                                  placeholder="Type a basic idea, or select a workflow above..." required></textarea>
+                        
+                        <!-- Magic Optimize Button -->
+                        <button type="button" onclick="optimizePrompt()" id="optimize-btn" class="absolute bottom-3 left-3 flex items-center space-x-1.5 text-[10px] font-bold uppercase tracking-wider bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white px-2.5 py-1.5 rounded-lg transition-colors border border-zinc-700">
+                            <i class="fa-solid fa-wand-magic-sparkles text-indigo-400"></i>
+                            <span id="optimize-text">Enhance Prompt</span>
+                        </button>
+                    </div>
 
                     <div class="flex items-center justify-between mt-3">
-                        <span class="text-xs font-medium text-slate-500 bg-slate-800 px-2.5 py-1 rounded-md">Costs 1 credit</span>
-                        <button type="submit" id="submit-btn" class="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-sm px-6 py-2.5 rounded-xl transition-all flex items-center space-x-2">
+                        <span class="text-xs font-medium text-zinc-600 bg-zinc-900 border border-zinc-800 px-2.5 py-1 rounded-md">Costs 1 credit</span>
+                        <button type="submit" id="submit-btn" class="bg-white hover:bg-zinc-200 text-black font-semibold text-sm px-6 py-2.5 rounded-xl transition-all flex items-center space-x-2 shadow-[0_0_15px_rgba(255,255,255,0.1)]">
                             <span>Generate</span>
                             <i class="fa-solid fa-paper-plane text-xs"></i>
                         </button>
@@ -245,6 +255,52 @@
             const copyText = document.getElementById('copy-text');
             copyText.innerText = 'Copied!';
             setTimeout(() => { copyText.innerText = 'Copy'; }, 2000);
+        }
+
+        // 4. Magic Prompt Optimizer
+        async function optimizePrompt() {
+            const textarea = document.getElementById('prompt-input');
+            const btn = document.getElementById('optimize-btn');
+            const btnText = document.getElementById('optimize-text');
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            const originalText = textarea.value.trim();
+
+            if (originalText.length < 3) {
+                alert("Please type a few words to optimize first!");
+                return;
+            }
+
+            // UI Loading state
+            const originalBtnHtml = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-indigo-400"></i><span>Enhancing...</span>';
+
+            try {
+                const response = await fetch("{% url 'optimize_prompt' %}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrfToken
+                    },
+                    body: JSON.stringify({ prompt: originalText })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    // Type out the new prompt smoothly
+                    textarea.value = data.optimized_prompt;
+                    textarea.classList.add('bg-indigo-900/10', 'border-indigo-500/50');
+                    setTimeout(() => textarea.classList.remove('bg-indigo-900/10', 'border-indigo-500/50'), 1500);
+                } else {
+                    alert(data.error);
+                }
+            } catch (error) {
+                alert("Failed to connect to the optimizer.");
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalBtnHtml;
+            }
         }
     </script>
 </body>
